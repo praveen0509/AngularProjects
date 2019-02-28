@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Injectable, OnInit} from '@angular/core';
+import { LocalStorage } from '@ngx-pwa/local-storage';
 
 @Component({
   selector: 'app-body-and-sidebar',
@@ -16,7 +17,7 @@ import { Component, OnInit } from '@angular/core';
             <button class="text-danger" (click)="deleteFunction()">Delete</button>
           </li>
           <li class="nav-item col-md-3">
-            <input  type="text" name="search" placeholder="search"  (click)="searchFunction()" ngModel>
+            <input  type="text" placeholder="search"  [(ngModel)]="searchTerm">
           </li>
         </ul>
       </nav>
@@ -26,33 +27,35 @@ import { Component, OnInit } from '@angular/core';
     <div  class="row">
       <div  class="col-sm-3"  style="background-color: lightblue; text-align: center">
         <h3>The static text:</h3>
-        <h5></h5>
-        <div>
-
-            {{textArea}}
+            {{currentDate | date: 'short'}}<br>
+        <div class="active text-info" >{{textArea}}</div>
+        <!--filterSearchPipe: searchTerm-->
+        <div  *ngFor="let data of saveTextArray | filterBy: searchTerm" (click)="clickedDataFunction(data)" ngModel>
+           {{data}}
         </div>
-        <div  *ngFor="let data of saveTextArray" (click)="clickedDataFunction(data)" ngModel>
-         {{data}}</div>
-
-
       </div>
-      <div  class="col-sm-9"  style="background-color: lightpink; text-align: center">
+      <div  class="col-sm-9"  style="background-color: lightpink">
         <label>TextArea:</label><br>
-        <textarea [(ngModel)]="textArea" (blur)="minStrFunction()" ></textarea></div>
+        <textarea [(ngModel)]="textArea" (blur)="minStrFunction()" cols="100"></textarea></div>
     </div>
 
   `,
   styles: []
 })
+
+@Injectable()
 export class BodyAndSidebarComponent implements OnInit {
 
-  constructor() { }
+  constructor(private localStorage: LocalStorage) { }
 
   textArea: string;
   minText = '';
   saveTextArray = new Array();
   currentDate = new Date();
+  searchTerm: string;
+
   ngOnInit() {
+    this.localStorage.setItem('userDetails', this.saveTextArray).subscribe(() => {});
   }
 
   minStrFunction() {
@@ -64,7 +67,8 @@ export class BodyAndSidebarComponent implements OnInit {
   }
 
   saveFunction() {
-    this.saveTextArray.push( this.minText + this.currentDate);
+    this.saveTextArray.push( this.minText);
+    alert('Data Saved');
   }
 
   clickedDataFunction(data) {
@@ -77,11 +81,9 @@ export class BodyAndSidebarComponent implements OnInit {
         this.saveTextArray.splice(i, 1);
       }
     }
+    this.textArea = '';
   }
 
 
-  searchFunction() {
-
-  }
 
 }
